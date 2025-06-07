@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class SingletonGameManager : MonoBehaviour
 {
-    public static SingletonGameManager Instance;
+    public static SingletonGameManager Instance { get; private set; }
+    public EnemySpawner enemySpawner;
+    public RoomManager roomManager;
 
     public int enemiesDefeated = 0, enemiesDefeatedThisRound = 0;
 
@@ -26,7 +28,9 @@ public class SingletonGameManager : MonoBehaviour
         // Debug.Log("Enemies defeated: " + enemiesDefeated);
     }
 
-    public void clearRoundStats() {
+    public void clearRoundStats()
+    {
         enemiesDefeatedThisRound = 0;
     }
+    
 }

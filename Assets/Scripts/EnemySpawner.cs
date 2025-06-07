@@ -1,11 +1,12 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
+using System.Linq;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Spawner Settings")]
-    public Terrain terrain;                        //Also Optional
+    [Header("Spawner Settings (Terrain / Fixed)")]
+    public Terrain terrain;
     public GameObject enemyPrefab;
     public Transform player;
     public int maxEnemies = 10;
@@ -15,69 +16,53 @@ public class EnemySpawner : MonoBehaviour
     public float minSpawnRadius = 10f;
     public float maxSpawnRadius = 30f;
 
-    [Header("Optional Fixed Spawn Points")]
-    public Transform[] spawnPoints;
-
     private List<GameObject> spawnedEnemies = new List<GameObject>();
     private float timer = 0f;
 
     void Update()
     {
-        timer += Time.deltaTime;
+        //Keep cleaning up destroyed enemies
+        spawnedEnemies.RemoveAll(e => e == null);
 
+        timer += Time.deltaTime;
         if (timer >= respawnInterval && spawnedEnemies.Count < maxEnemies)
         {
-            SpawnEnemy();
+            SpawnOutdoorOrFixed();
             timer = 0f;
         }
-
-        spawnedEnemies.RemoveAll(enemy => enemy == null);
     }
 
-    void SpawnEnemy()
+    private void SpawnOutdoorOrFixed()
     {
         Vector3 spawnPos;
-
-        if (spawnPoints.Length > 0 && Random.value > 0.5f)
-        {
-            Transform chosenPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-            spawnPos = chosenPoint.position;
-        }
-        else if (terrain != null)
+        //terrain‐spawn (if terrain is assigned)
+        if (terrain != null)
         {
             spawnPos = GetTerrainSpawnPosition();
         }
-        else if (spawnPoints.Length > 0)
-        {
-            Transform chosenPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-            spawnPos = chosenPoint.position;
-        }
         else
         {
-            Debug.LogWarning("EnemySpawner has no valid spawn method!");
+            Debug.LogWarning("EnemySpawner: No fixed points or terrain to spawn outdoors.");
             return;
         }
 
-        //Ensure spawnPos is on the NavMesh
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(spawnPos, out hit, 5f, NavMesh.AllAreas))
+        //Ensure that the chosen position is on the NavMesh
+        if (NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 5f, NavMesh.AllAreas))
         {
             spawnPos = hit.position;
         }
         else
         {
-            Debug.LogWarning($"No valid NavMesh near spawn position at {spawnPos}");
-            return; //Skip spawn if no valid navmesh found
+            Debug.LogWarning($"EnemySpawner: Couldn't find NavMesh near {spawnPos}. Skipping spawn.");
+            return;
         }
 
         GameObject newEnemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-
         newEnemy.GetComponent<EnemyAttack>().Init(player);
-
         spawnedEnemies.Add(newEnemy);
     }
 
-    Vector3 GetTerrainSpawnPosition()
+    private Vector3 GetTerrainSpawnPosition()
     {
         Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(minSpawnRadius, maxSpawnRadius);
 

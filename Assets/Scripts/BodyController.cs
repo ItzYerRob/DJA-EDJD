@@ -6,6 +6,7 @@ public class BodyController : MonoBehaviour
     public LayerMask groundMask;
 
     private Rigidbody rb;
+    public bool canRagdoll;
     
     public bool isGrounded, isWalking;
     //public Animator camAnim;
@@ -30,6 +31,11 @@ public class BodyController : MonoBehaviour
         //camAnim.SetBool("isWalking", isWalking);
 
         //Check if the player is grounded
+        Collider[] groundHits = Physics.OverlapSphere(groundCheck.position, 0.1f, groundMask);
+        foreach (Collider col in groundHits)
+        {
+            Debug.Log("GroundCheck collided with: " + col.name);
+        }
         isGrounded = Physics.CheckSphere(groundCheck.position, 0.1f, groundMask);
         //isWallJumping = Physics.CheckSphere(groundCheck.position, 0.3f, groundMask);
 

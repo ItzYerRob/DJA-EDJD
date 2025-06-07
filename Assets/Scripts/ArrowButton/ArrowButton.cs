@@ -13,7 +13,6 @@ namespace ArrowButton
         [SerializeField] private List<GameObject> components;
         [SerializeField] private GameObject mainCamera;
         [SerializeField] private GameState destination;
-        private GameState _gameState; 
         private Vector3 _startScale;
         private Vector3 _shrinkScale;
 
@@ -21,7 +20,6 @@ namespace ArrowButton
         {
             _startScale = components[0].transform.localScale;
             _shrinkScale = _startScale * 2/3;
-            _gameState = GameManager.currentGameState;
             Shrink();
         }
         
@@ -61,35 +59,37 @@ namespace ArrowButton
 
         private void OnMouseDown()
         {
-            
-            if (destination == GameState.Options)
+            switch (GameManager.currentGameState)
             {
-                if (_gameState == GameState.MainMenu)
-                {
-                    GameManager.currentGameState = GameState.Options;
+                case GameState.MainMenu:
+                    if (destination == GameState.Options)
+                    {
+                        StartCoroutine(RotateCamera(mainCamera.transform, 90.0f));
+                        GameManager.currentGameState = GameState.Options;
+                    }
+                    else if (destination == GameState.Credits)
+                    {
+                        StartCoroutine(RotateCamera(mainCamera.transform, -90.0f));
+                        GameManager.currentGameState = GameState.Credits;
+                    }
                     destination = GameState.MainMenu;
-                    StartCoroutine(RotateCamera(mainCamera.transform, 90f));
-                }
-                else
-                {
-                    GameManager.currentGameState = GameState.MainMenu;
-                    destination = GameState.Options;
-                    StartCoroutine(RotateCamera(mainCamera.transform, 0f));
-                }
-            } else if (destination == GameState.Credits)
-            {
-                if (_gameState == GameState.MainMenu)
-                {
-                    GameManager.currentGameState = GameState.Credits;
-                    destination = GameState.MainMenu;
-                    StartCoroutine(RotateCamera(mainCamera.transform, -90f));
-                }
-                else
-                {
-                    GameManager.currentGameState = GameState.MainMenu;
+                    break;
+                case GameState.Credits:
+                    if (destination == GameState.MainMenu)
+                    {
+                        StartCoroutine(RotateCamera(mainCamera.transform, 0));
+                        GameManager.currentGameState = GameState.MainMenu;
+                    }
                     destination = GameState.Credits;
-                    StartCoroutine(RotateCamera(mainCamera.transform, 0f));
-                }
+                    break;
+                case GameState.Options:
+                    if (destination == GameState.MainMenu)
+                    {
+                        StartCoroutine(RotateCamera(mainCamera.transform, 0));
+                        GameManager.currentGameState = GameState.MainMenu;
+                    }
+                    destination = GameState.Options;
+                    break;
             }
         }
 
@@ -117,8 +117,9 @@ namespace ArrowButton
                     yield return null;
                 }
             }
-            else
+            else if (angle < 0)
             {
+                
                 while (target.rotation.eulerAngles.y > angle)
                 {
                     var angles = target.rotation.eulerAngles;
@@ -126,7 +127,6 @@ namespace ArrowButton
                     var rotation = target.rotation;
                     rotation.eulerAngles = angles;
                     target.rotation = rotation;
-                    print(target.rotation.eulerAngles.y);
 
                     if (target.rotation.eulerAngles.y < 360f + angle)
                     {
@@ -135,9 +135,70 @@ namespace ArrowButton
                         var quaternion = target.rotation;
                         quaternion.eulerAngles = vector3;
                         target.rotation = quaternion;
+                        break;
                     }
 
                     yield return null;
+                }
+            }
+            if (angle == 0)
+            {
+                if (target.rotation.eulerAngles.y < 180)
+                {
+                    while (target.rotation.eulerAngles.y > 0)
+                    {
+                        if (target.rotation.eulerAngles.y < 340f)
+                        {
+                            var angles = target.rotation.eulerAngles;
+                            angles.y = target.rotation.eulerAngles.y - Time.deltaTime * 200;
+                            var rotation = target.rotation;
+                            rotation.eulerAngles = angles;
+                            target.rotation = rotation;
+
+                            if (target.rotation.eulerAngles.y is > 0 and < 1)
+                            {
+                                var vector3 = target.rotation.eulerAngles;
+                                vector3.y = 0;
+                                var quaternion = target.rotation;
+                                quaternion.eulerAngles = vector3;
+                                target.rotation = quaternion;
+                            }
+                        }
+                        else
+                        {
+                            var vector3 = target.rotation.eulerAngles;
+                            vector3.y = 0;
+                            var quaternion = target.rotation;
+                            quaternion.eulerAngles = vector3;
+                            target.rotation = quaternion;
+                            break;
+                        };
+
+                        yield return null;
+
+                    }
+                }
+                else
+                {
+                    while (target.rotation.eulerAngles.y > 180)
+                    {
+                        var angles = target.rotation.eulerAngles;
+                        angles.y = target.rotation.eulerAngles.y + Time.deltaTime * 200;
+                        var rotation = target.rotation;
+                        rotation.eulerAngles = angles;
+                        target.rotation = rotation;
+
+                        if (target.rotation.eulerAngles.y is < 180f and > 0)
+                        {
+                            var vector3 = target.rotation.eulerAngles;
+                            vector3.y = 0;
+                            var quaternion = target.rotation;
+                            quaternion.eulerAngles = vector3;
+                            target.rotation = quaternion;
+                        }
+
+                        yield return null;
+                    }
                 }
             }
         }

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +7,7 @@ public class CardUI : MonoBehaviour
     [SerializeField] private Image powerUpIconImage;
     [SerializeField] private Text powerUpNameText;
     [SerializeField] private Text powerUpDescriptionText;
+    [SerializeField] public Image cardBorder;
     
     private PowerUpSelection.PowerUp powerUpData;
     
@@ -26,6 +25,24 @@ public class CardUI : MonoBehaviour
             powerUpDescriptionText.text = powerUp.description;
         
         SetCardRevealed(revealed);
+        
+        // Adicionar uma borda para o efeito de brilho se ela não existir
+        if (cardBorder == null)
+        {
+            GameObject borderObj = new GameObject("CardBorder");
+            borderObj.transform.SetParent(transform);
+            
+            RectTransform rt = borderObj.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(-5, -5);
+            rt.offsetMax = new Vector2(5, 5);
+            rt.SetAsFirstSibling(); // Colocar atrás de tudo
+            
+            cardBorder = borderObj.AddComponent<Image>();
+            cardBorder.sprite = cardBackImage.sprite; // Usar o mesmo sprite como base
+            cardBorder.color = new Color(1f, 1f, 1f, 0f); // Inicialmente invisível
+        }
     }
     
     public void RevealCard()

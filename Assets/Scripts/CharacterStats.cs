@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -23,6 +24,11 @@ public class CharacterStats : MonoBehaviour
 
     public bool isImmune = false;
 
+    public GameObject ragdollPrefab;
+    public float ragdollLifetime = 5f;
+
+    public Animator animator;
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -37,7 +43,15 @@ public class CharacterStats : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.K) && AreWeAPlayer) { TakeDamage(20, 0, 100000f); } //Debug
         if (Input.GetKeyDown(KeyCode.L) && AreWeAPlayer) { TakeDamage(-20, 0, 100000f); } //Debug
 
-        if (!AreWeAPlayer && currentHealth <= 0) { Destroy(gameObject, 0f); SingletonGameManager.Instance.EnemyDefeated(); }
+        if (!AreWeAPlayer && currentHealth <= 0) {
+            if (ragdollPrefab != null) {
+                GameObject ragdoll = Instantiate(ragdollPrefab, transform.position, transform.rotation);
+                Destroy(ragdoll, ragdollLifetime);
+            }
+
+            Destroy(gameObject);
+            SingletonGameManager.Instance.EnemyDefeated();
+        }
         //There is currently no gameOver scene, so death is fake news
         //if (AreWeAPlayer && currentHealth <= 0) { SceneManager.LoadScene("GameOverMenu"); }
 
@@ -56,8 +70,8 @@ public class CharacterStats : MonoBehaviour
 
     public void TakeDamage(float piercingdamage, float bluntdamage, float armorpen)
     {
-        if(isImmune) {return;}
-        
+        if (isImmune) { return; }
+
         float damageMultiplier = 1.0f;
 
         //The whole armor thing is probably overthinked but meh, ill worry about it later
@@ -72,7 +86,7 @@ public class CharacterStats : MonoBehaviour
         else
         {
             //First, we get a damage mult from the armorpen divided by entity's current armor
-            damageMultiplier = Mathf.Max(0.2f, armorpen / currentArmor) * 1.0f; //Careful with currentArmor if it equals 0, since dividing by zero will likely attribute infinity. Since its minimum is 0.2 however, i guess its theoretically not a problem?
+            damageMultiplier = Mathf.Max(0.2f, armorpen / currentArmor) * 1.0f; //Careful with currentArmor if it equals 0, since dividing by zero it will error out. Since its minimum is 0.2 however, i guess its not a problem?
             //Then we square root the piercing damage and multiply it by damage mult
             piercingdamage = Mathf.Pow(piercingdamage, 1f / 3f) * damageMultiplier;
             //And we multiply blunt damage by absorption and damage mult
@@ -82,6 +96,7 @@ public class CharacterStats : MonoBehaviour
         }
 
         if (HaveWeAHealthBar) { resourceBar.SetHealth((int)currentHealth, this); }
+        if(AreWeAPlayer && animator != null) { animator.Play("Flinch"); }
     }
 
     public void TakeStaminaDamage(float value)

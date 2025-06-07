@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Player;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 namespace StartButton
 {
@@ -44,15 +44,15 @@ namespace StartButton
         {
             //mainCamera.transform.parent = player.transform;
             mainCamera.GetComponent<CameraMovement>().followPlayer = true;
-            
+
             foreach (var o in gameObjects)
             {
                 o.SetActive(false);
             }
 
             gameObject.SetActive(false);
-
-            SceneManager.LoadSceneAsync("Level1");
+            
+            SceneManager.LoadScene("Level1");
         }
     }
 }
