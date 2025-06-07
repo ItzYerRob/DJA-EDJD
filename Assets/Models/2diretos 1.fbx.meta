@@ -160,11 +160,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Armature.003|2DIRETOS
-      takeName: Armature.003|2DIRETOS
+      name: Armature.003|atack01 (1)
+      takeName: Armature.003|atack01
       internalID: 8039151747085146947
-      firstFrame: 1
-      lastFrame: 14
+      firstFrame: 0
+      lastFrame: 12
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

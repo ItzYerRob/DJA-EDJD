@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public LayerMask enemyLayer;
     private FactionHandler factionHandler;
 
-    public Animator attackAnimator;
+    public Animator animator;
 
     private bool isAttacking = false;
     private bool queueNextAttack = false;
@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                if (attackAnimator != null)
+                if (animator != null)
                 {
                     PlayerEventManager.TriggerAttack();
                     StartCoroutine(AttackCombo());
@@ -85,6 +85,7 @@ public class PlayerController : MonoBehaviour
             
             //Trigger the global parry event.
             PlayerEventManager.TriggerParry();
+            animator.Play("Block");
             Debug.Log("Parry attempted!");
         }
 
@@ -223,7 +224,7 @@ public class PlayerController : MonoBehaviour
     IEnumerator AttackCombo()
     {
         isAttacking = true;
-        string[] comboAnims = { "2Rights", "Uppercut", "Inboxing" };
+        string[] comboAnims = { "Claw", "Uppercut", "Kick" };
 
         int comboIndex = 0;
 
@@ -231,11 +232,11 @@ public class PlayerController : MonoBehaviour
         {
             queueNextAttack = false;
 
-            attackAnimator.Play(comboAnims[comboIndex]);
+            animator.Play(comboAnims[comboIndex]);
             PlayerEventManager.TriggerAttack();
             Attack(50f,50f,1f,30f,0f,20f);
 
-            float animTime = attackAnimator.GetCurrentAnimatorStateInfo(0).length * 0.9f;
+            float animTime = animator.GetCurrentAnimatorStateInfo(0).length * 0.9f;
             float timer = 0f;
 
             while (timer < animTime)
@@ -275,3 +276,8 @@ public class PlayerController : MonoBehaviour
 
 
 }
+
+
+
+//Idle->StraightLeft->StraightRight->StraightLeftAgain
+//Idle->UppercutRight
